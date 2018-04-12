@@ -9,3 +9,5 @@ Palette are .gpl format, usable with gimp krita
 Possible importer for Adobe suite 
 
 Possible importer for Adobe Palette and xml format
+
+Pantone creation through several techniques (complementary colors, triad, shade, similarity...) around a "master" color
