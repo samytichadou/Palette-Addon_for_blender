@@ -10,11 +10,35 @@ class PaletteCreatePantone(bpy.types.Operator):
     bl_label = "Create Pantone"
     bl_description = "Create New Pantone from selected Base Color"
     bl_options = {"REGISTER"}
-
+    
     @classmethod
     def poll(cls, context):
         return len(bpy.data.window_managers['WinMan'].palette)!=0
+    
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+    
+    def check(self, context):
+        return True
 
+    def draw(self, context):
+        palette_prop=bpy.data.window_managers['WinMan'].palette[0]
+        layout = self.layout
+        split=layout.split()
+        col=split.column(align=False)
+        col.label('Name')
+        col.label('Base')
+        col.label('Type')
+        col.label('Offset')
+        col.label('Precision')
+        col=split.column(align=False)
+        col.prop(palette_prop, 'pantone_name',text='')
+        col.prop(palette_prop, 'pantone_base_color', text='')
+        col.prop(palette_prop, 'pantone_type',text='')
+        col.prop(palette_prop, 'pantone_offset',text='', slider=True)
+        col.prop(palette_prop, 'pantone_precision',text='', slider=True)
+        
     def execute(self, context):
         prop=bpy.data.window_managers['WinMan'].palette[0]
         palettes=prop.palettes
@@ -41,7 +65,7 @@ class PaletteCreatePantone(bpy.types.Operator):
         
         new_palette=palettes.add()
         new_palette.name=name
-        new_palette.filepath=os.path.join(GetPrefPath(), new_palette.name+".txt")
+        new_palette.filepath=os.path.join(GetPrefPath(), new_palette.name+".gpl")
         if category=='SIMILAR':
             new_colors=generate_similar_pantone(decalage, precision, base_color)
         elif category=='MONOCHROMATIC':

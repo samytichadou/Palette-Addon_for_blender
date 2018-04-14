@@ -24,7 +24,9 @@ class PalettePanelManager(bpy.types.Panel):
                 row=layout.row(align=True)
                 row.prop(palette_prop, 'manage_menu', text='', icon='LOOP_BACK', emboss=False)
                 row.separator()
-                row.prop(palette_prop.palettes[palette_prop.index], 'name', text='')
+                row.prop(palette_prop.palettes[palette_prop.index], 'temp_name', text='')
+                row.operator("palette.rename_palette", text='', icon='FILE_TICK')
+                row.separator()
                 row.operator('palette.remove_palette', text='', icon='X').index=idx
                 row.separator()
                 row.operator('palette.add_color', text='', icon='DISCLOSURE_TRI_RIGHT').index=palette_prop.index
@@ -60,51 +62,34 @@ class PalettePanelManager(bpy.types.Panel):
             # palette menu
             else:
                 row=layout.row(align=True)
-                row.operator('palette.create_palette', text='Create Palette', icon='DISCLOSURE_TRI_RIGHT')
-                row.separator()
+                row.operator('palette.create_palette', text='', icon='PLUS')
+                #row.separator()
                 row.operator("palette.refresh_from_files", text='', icon='FILE_REFRESH')
+                #row.separator()
+                row.operator("palette.remove_all_palette", text='', icon='CANCEL')
+                #row.separator()
+                row.operator("palette.open_folder", text='', icon='FILESEL')
+                #row.separator()
+                row.operator("palette.create_pantone", text='', icon='COLORSET_04_VEC')
+                #row.separator()
+                row.operator('palette.create_image_palette', text='', icon='FILE_IMAGE')
                 row.separator()
                 row.prop(palette_prop, 'display_color_names', text='', icon='VISIBLE_IPO_ON')
-                row.separator()
+                #row.separator()
                 row.operator('palette.zoom_actions', text='', icon='ZOOM_IN').action = 'PLUS'
                 row.operator('palette.zoom_actions', text='', icon='ZOOM_OUT').action = 'MINUS'
-                
-                #pantone
-                box=layout.box()
-                row=box.row(align=True)
-                if palette_prop.pantone_hide==True:
-                    row.prop(palette_prop, 'pantone_hide', icon_only=True, icon='TRIA_RIGHT', emboss=False)
-                else:
-                    row.prop(palette_prop, 'pantone_hide', icon_only=True, icon='TRIA_DOWN', emboss=False)
-                row.label("Pantone Creation", icon='COLORSET_04_VEC')
-                if palette_prop.pantone_hide==False:
-                    split=box.split()
-                    col=split.column(align=False)
-                    col.label('Name')
-                    col.label('Base')
-                    col.label('Type')
-                    col.label('Offset')
-                    col.label('Precision')
-                    col=split.column(align=False)
-                    col.prop(palette_prop, 'pantone_name',text='')
-                    col.prop(palette_prop, 'pantone_base_color', text='')
-                    col.prop(palette_prop, 'pantone_type',text='')
-                    col.prop(palette_prop, 'pantone_offset',text='', slider=True)
-                    col.prop(palette_prop, 'pantone_precision',text='', slider=True)
-                    row=box.row(align=False)
-                    row.operator("palette.create_pantone", text='Generate', icon='GROUP_VCOL')
-                
+                bcol=layout.column(align=True)
                 pt=-1
                 for p in palette_prop.palettes:
                     pt+=1
-                    box=layout.box()
+                    box=bcol.box()
                     col=box.column(align=True)
                     row=col.row(align=True)
                     if p.hide==True:
                         row.prop(p, 'hide', icon_only=True, icon='TRIA_RIGHT', emboss=False)
                     else:
                         row.prop(p, 'hide', icon_only=True, icon='TRIA_DOWN', emboss=False)
-                    row.label(p.name, icon='GROUP_VCOL')
+                    row.label(p.name)
                     row.operator("palette.switch_to_management", text='', icon='SETTINGS', emboss=False).index=pt
                     row.operator('palette.remove_palette', text='', icon='X', emboss=False).index=pt
                     row.operator("palette.add_color", text='', icon='DISCLOSURE_TRI_RIGHT', emboss=False).index=pt
@@ -172,7 +157,9 @@ class PaletteFloatManager(bpy.types.Operator):
                 row=layout.row(align=True)
                 row.prop(palette_prop, 'manage_menu', text='', icon='LOOP_BACK', emboss=False)
                 row.separator()
-                row.prop(palette_prop.palettes[palette_prop.index], 'name', text='')
+                row.prop(palette_prop.palettes[palette_prop.index], 'temp_name', text='')
+                row.operator("palette.rename_palette", text='', icon='FILE_TICK')
+                row.separator()
                 row.operator('palette.remove_palette', text='', icon='X').index=idx
                 row.separator()
                 row.operator('palette.add_color', text='', icon='DISCLOSURE_TRI_RIGHT').index=palette_prop.index
@@ -208,51 +195,34 @@ class PaletteFloatManager(bpy.types.Operator):
             # palette menu
             else:
                 row=layout.row(align=True)
-                row.operator('palette.create_palette', text='Create Palette', icon='DISCLOSURE_TRI_RIGHT')
-                row.separator()
+                row.operator('palette.create_palette', text='', icon='PLUS')
+                #row.separator()
                 row.operator("palette.refresh_from_files", text='', icon='FILE_REFRESH')
+                #row.separator()
+                row.operator("palette.remove_all_palette", text='', icon='CANCEL')
+                #row.separator()
+                row.operator("palette.open_folder", text='', icon='FILESEL')
+                #row.separator()
+                row.operator("palette.create_pantone", text='', icon='COLORSET_04_VEC')
+                #row.separator()
+                row.operator('palette.create_image_palette', text='', icon='FILE_IMAGE')
                 row.separator()
                 row.prop(palette_prop, 'display_color_names', text='', icon='VISIBLE_IPO_ON')
-                row.separator()
+                #row.separator()
                 row.operator('palette.zoom_actions', text='', icon='ZOOM_IN').action = 'PLUS'
                 row.operator('palette.zoom_actions', text='', icon='ZOOM_OUT').action = 'MINUS'
-                
-                #pantone
-                box=layout.box()
-                row=box.row(align=True)
-                if palette_prop.pantone_hide==True:
-                    row.prop(palette_prop, 'pantone_hide', icon_only=True, icon='TRIA_RIGHT', emboss=False)
-                else:
-                    row.prop(palette_prop, 'pantone_hide', icon_only=True, icon='TRIA_DOWN', emboss=False)
-                row.label("Pantone Creation", icon='COLORSET_04_VEC')
-                if palette_prop.pantone_hide==False:
-                    split=box.split()
-                    col=split.column(align=False)
-                    col.label('Name')
-                    col.label('Base')
-                    col.label('Type')
-                    col.label('Offset')
-                    col.label('Precision')
-                    col=split.column(align=False)
-                    col.prop(palette_prop, 'pantone_name',text='')
-                    col.prop(palette_prop, 'pantone_base_color', text='')
-                    col.prop(palette_prop, 'pantone_type',text='')
-                    col.prop(palette_prop, 'pantone_offset',text='', slider=True)
-                    col.prop(palette_prop, 'pantone_precision',text='', slider=True)
-                    row=box.row(align=False)
-                    row.operator("palette.create_pantone", text='Generate', icon='GROUP_VCOL')
-                
+                bcol=layout.column(align=True)
                 pt=-1
                 for p in palette_prop.palettes:
                     pt+=1
-                    box=layout.box()
+                    box=bcol.box()
                     col=box.column(align=True)
                     row=col.row(align=True)
                     if p.hide==True:
                         row.prop(p, 'hide', icon_only=True, icon='TRIA_RIGHT', emboss=False)
                     else:
                         row.prop(p, 'hide', icon_only=True, icon='TRIA_DOWN', emboss=False)
-                    row.label(p.name, icon='GROUP_VCOL')
+                    row.label(p.name)
                     row.operator("palette.switch_to_management", text='', icon='SETTINGS', emboss=False).index=pt
                     row.operator('palette.remove_palette', text='', icon='X', emboss=False).index=pt
                     row.operator("palette.add_color", text='', icon='DISCLOSURE_TRI_RIGHT', emboss=False).index=pt

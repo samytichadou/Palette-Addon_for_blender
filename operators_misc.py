@@ -2,7 +2,7 @@ import bpy
 import os
 
 from .addon_prefs import get_addon_preferences
-from .files_functions import RemovePaletteFile, GetPrefPath, RefreshPaletteFromFile, SavePaletteFile
+from .files_functions import RemovePaletteFile, GetPrefPath, RefreshPaletteFromFile, SavePaletteFile, OpenFolder
 from .node_functions import CreateNodeGroupFromPalette, RemoveNodeGroupFromPalette, UpdateAddNodeGroupColor, UpdateRemoveNodeGroupColor, PaletteNodeUpdate
 
 # add palette
@@ -30,7 +30,8 @@ class PaletteCreatePalette(bpy.types.Operator):
         else:
             namenb=1
         new.name='Palette_'+str(namenb)
-        new.filepath=os.path.join(GetPrefPath(), new.name+".txt")
+        new.filepath=os.path.join(GetPrefPath(), new.name+".gpl")
+        new.temp_name=new.name
         col1=new.colors.add()
         col1.name+="1"
         col1.color_value=prefs.col1
@@ -54,7 +55,7 @@ class PaletteRemovePalette(bpy.types.Operator):
     bl_idname = "palette.remove_palette"
     bl_label = "Remove Palette"
     bl_description = "Remove the Palette"
-    bl_options = {"REGISTER"}
+    bl_options = {"REGISTER", "UNDO"}
     
     index = bpy.props.IntProperty()
 
@@ -84,6 +85,38 @@ class PaletteRemovePalette(bpy.types.Operator):
             prop.manage_menu=False
         return {"FINISHED"}
     
+# remove all palette
+class PaletteRemoveAllPalette(bpy.types.Operator):
+    bl_idname = "palette.remove_all_palette"
+    bl_label = "Remove All Palettes"
+    bl_description = "Remove all the Palettes"
+    bl_options = {"REGISTER", "UNDO"}
+    
+    @classmethod
+    def poll(cls, context):
+        return len(bpy.data.window_managers['WinMan'].palette)!=0
+    
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context):
+        layout = self.layout
+        col=layout.column()
+        col.label('All Color Palettes will be Permanently Removed', icon='ERROR')
+        col.label('Click OK to continue')
+        
+
+    def execute(self, context):
+        prop=bpy.data.window_managers['WinMan'].palette[0]
+        for p in prop.palettes:
+            #delete palette file
+            RemovePaletteFile(p)
+            #delete node group
+            RemoveNodeGroupFromPalette(p)
+        prop.palettes.clear()
+        return {"FINISHED"}
+    
 # add color to active palette
 class PaletteAddColor(bpy.types.Operator):
     bl_idname = "palette.add_color"
@@ -98,10 +131,12 @@ class PaletteAddColor(bpy.types.Operator):
         return len(bpy.data.window_managers['WinMan'].palette)!=0
 
     def execute(self, context):
+        prefs=get_addon_preferences()
         prop=bpy.data.window_managers['WinMan'].palette[0]
         active=prop.palettes[self.index]
         new=active.colors.add()
         new.name+=str(len(active.colors))
+        new.color_value=prefs.col3
         UpdateAddNodeGroupColor(active)
         PaletteNodeUpdate(self, context)
         SavePaletteFile(active)
@@ -127,6 +162,7 @@ class PaletteSwitchToManagement(bpy.types.Operator):
         prop.index=self.index
         for c in active.colors:
             c.temp_name=c.name
+        active.temp_name=active.name
         return {"FINISHED"}
     
 # remove color from active palette
@@ -190,6 +226,44 @@ class PaletteRenameColor(bpy.types.Operator):
             activecol.name=temp+"_"+str(nb)
         activecol.temp_name=activecol.name
         return {"FINISHED"}
+    
+# rename palette
+class PaletteRenamePalette(bpy.types.Operator):
+    bl_idname = "palette.rename_palette"
+    bl_label = "Rename Palette"
+    bl_description = "Rename active Palette"
+    bl_options = {"REGISTER"}
+    
+    @classmethod
+    def poll(cls, context):
+        return len(bpy.data.window_managers['WinMan'].palette)!=0
+
+    def execute(self, context):
+        prop=bpy.data.window_managers['WinMan'].palette[0]
+        palettes=prop.palettes
+        active=prop.palettes[prop.index]
+        temp=active.temp_name
+        oname=[]
+        ct=-1
+        chk=0
+        for c in palettes:
+            ct+=1
+            if ct!=prop.index:
+                oname.append(c.name)
+        for n in oname:
+            if n==temp:
+                chk=1
+        if chk==0:
+            active.name=temp
+        else:
+            nb=oname.count(temp)
+            newname=temp+"_"+str(nb)
+            for n in oname:
+                if n==newname:
+                    nb+=1
+            active.name=temp+"_"+str(nb)
+        active.temp_name=active.name
+        return {"FINISHED"}
 
 # palette zoom actions
 class PaletteZoomActions(bpy.types.Operator):
@@ -229,4 +303,20 @@ class PaletteRefreshFromFIles(bpy.types.Operator):
         for i in range(len(pallettes)-1,-1,-1):
             pallettes.remove(i)
         RefreshPaletteFromFile()
+        return {"FINISHED"}
+
+# open folder
+class PaletteOpenPaletteFolder(bpy.types.Operator):
+    bl_idname = "palette.open_folder"
+    bl_label = "Open"
+    bl_description = "Open Palette Folder"
+    bl_options = {"REGISTER"}
+    
+    @classmethod
+    def poll(cls, context):
+        return len(bpy.data.window_managers['WinMan'].palette)!=0
+    
+    def execute(self, context):
+        palette=bpy.data.window_managers['WinMan'].palette[0].palettes
+        OpenFolder(GetPrefPath())
         return {"FINISHED"}

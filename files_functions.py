@@ -1,5 +1,8 @@
 import bpy
 import os
+import math
+
+from sys import platform
 
 from .addon_prefs import get_addon_preferences
 from .node_functions import UpdateNodeGroupColor, UpdateNodeGroupColorNames, PaletteNodeUpdate
@@ -39,14 +42,14 @@ def ImportPaletteFile(path):
         new_palette.filepath=file
         with open(file) as f:
             content = f.readlines()
-        content = [x.strip() for x in content]
+        #content = [x.strip() for x in content]
         
         for i in range(3, len(content)):
             if content[i]!='':
                 col=new_palette.colors.add()
                 name=content[i][12:].split(' #')[0]
                 col.name=name
-                hex=content[i].split('#')[1]
+                hex=content[i].split('#')[1].strip()
                 col.color_value=ConvertRGBBase255toRGBBase1(ConvertHEXtoRGBBase255(hex))
  
     return {'FINISHED'}
@@ -181,3 +184,50 @@ def ConvertHEXtoRGBBase255(colhex):
     r, g, b = bytes.fromhex(colhex)
     ncol=[r,g,b]
     return ncol
+
+# open folder path in explorer
+def OpenFolder(folderpath):
+    myOS = platform
+    if myOS.startswith('linux') or myOS.startswith('freebsd'):
+        cmd = 'xdg-open '
+    elif myOS.startswith('win'):
+        cmd = 'explorer '
+        if not folderpath:
+            return('/')
+    else:
+        cmd = 'open '
+    if not folderpath:
+        return('//')
+    folderpath = '"' + folderpath + '"'
+    fullcmd = cmd + folderpath
+    os.system(fullcmd)
+    return {'FINISHED'}
+
+# generate image pantone
+def GenerateImageFromPalette(name, palette, sizex, sizey):
+    #remove image if existing
+    try:
+        bpy.data.images.remove(bpy.data.images[name])
+    except KeyError:
+        pass
+    image = bpy.data.images.new(name, width=sizex, height=sizey)
+    squarenb=len(palette.colors)
+    sqsize=sizex/squarenb
+    pixels = [None] * sizex * sizey
+
+    #color squares
+    ct=0
+    for c in palette.colors:
+        ct+=1
+        r,v,b=c.color_value
+        for x in range(sizex):
+            for y in range(sizey):
+                if x>=((ct-1)*sqsize) and x<=(ct*sqsize):
+                    pixels[(y * (sizex)) + x] = [r, v, b, 1.0]
+    # flatten list
+    pixels = [chan for px in pixels for chan in px]
+
+    # assign pixels
+    image.pixels = pixels
+    
+    return image
