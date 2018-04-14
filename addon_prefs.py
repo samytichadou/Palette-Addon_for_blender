@@ -14,19 +14,20 @@ class Palette_AddonPrefs(bpy.types.AddonPreferences):
             description="Folder where Color Palettes will be stored",
             subtype="DIR_PATH",
             )
-    col1 = FloatVectorProperty(name='Default Color 1', subtype='COLOR', default=(0.0,0.168,0.187), min=0, max=1)
-    col2 = FloatVectorProperty(name='Default Color 2', subtype='COLOR', default=(0.0,0.234,0.260), min=0, max=1)
-    col3 = FloatVectorProperty(name='Default Color 3', subtype='COLOR', default=(0.007,0.305,0.332), min=0, max=1)
-    col4 = FloatVectorProperty(name='Default Color 4', subtype='COLOR', default=(0.0,0.401,0.444), min=0, max=1)
-    col5 = FloatVectorProperty(name='Default Color 5', subtype='COLOR', default=(0.0,0.536,0.593), min=0, max=1)
+    col1 = FloatVectorProperty(name='Default Color 1', subtype='COLOR_GAMMA', default=(0.0,0.168,0.187), min=0, max=1)
+    col2 = FloatVectorProperty(name='Default Color 2', subtype='COLOR_GAMMA', default=(0.0,0.234,0.260), min=0, max=1)
+    col3 = FloatVectorProperty(name='Default Color 3', subtype='COLOR_GAMMA', default=(0.007,0.305,0.332), min=0, max=1)
+    col4 = FloatVectorProperty(name='Default Color 4', subtype='COLOR_GAMMA', default=(0.0,0.401,0.444), min=0, max=1)
+    col5 = FloatVectorProperty(name='Default Color 5', subtype='COLOR_GAMMA', default=(0.0,0.536,0.593), min=0, max=1)
     
     def draw(self, context):
         layout = self.layout
         col=layout.column()
         col.prop(self, 'prefs_folderpath')
+        col=layout.column(align=True)
         row=col.row(align=True)
-        row.label("Default Palette")
-        row.separator()
+        row.label("Default Palette, the middle color will be default color value : ", icon='GROUP_VCOL')
+        row=col.row(align=True)
         row.prop(self, 'col1', text='')
         row.prop(self, 'col2', text='')
         row.prop(self, 'col3', text='')
